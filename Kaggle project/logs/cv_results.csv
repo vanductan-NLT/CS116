@@ -31,3 +31,8 @@
 2026-10-13 12:06,base_rf,rf,0.956922,5/5,"","","{'n_estimators':100,'min_samples_leaf':10}",""
 2026-10-13 12:06,X_clusterpca,xgb,0.961228,1/5,"aux,delay,fd_freq,route_full,original,cluster_pca","Flight Distance","{'learning_rate':0.02,'max_depth':7,'colsample_bytree':0.4,'n_jobs':4}",""
 2026-10-13 12:12,xgb_v2_tuple_k10,xgb,0.961192,10/10,"aux,delay,fd_freq,route_full,original,tuple_keys","Flight Distance,tuple17,tuple_ratings","{'learning_rate':0.02,'max_depth':7,'colsample_bytree':0.4,'n_jobs':4}",""
+2026-10-13 13:07,xgb_v1_sd03,xgb,0.961065,5/5,"aux,delay,fd_freq,route_full,original","Flight Distance","{'learning_rate':0.02,'max_depth':7,'colsample_bytree':0.4,'n_jobs':4}"," self_distill=0.3"
+2026-10-13 13:34,lgbm_v2_aux_k10,lgbm,0.961289,10/10,"aux,delay,fd_freq,route_full,original","Flight Distance","{'learning_rate':0.01,'num_leaves':127,'min_child_samples':100,'colsample_bytree':0.3,'n_jobs':10}",""
+2026-10-13 13:45,xgb_v3_cluster_k10,xgb,0.961209,10/10,"aux,delay,fd_freq,route_full,original,cluster_pca","Flight Distance","{'learning_rate':0.02,'max_depth':7,'colsample_bytree':0.4,'n_jobs':4}",""
+2026-10-13 13:50,xgb_optuna_k10,xgb,0.961273,10/10,"aux,delay,fd_freq,route_full,original,cluster_pca","Flight Distance","{'learning_rate':0.0242,'max_depth':9,'min_child_weight':29.5,'subsample':0.937,'colsample_bytree':0.55,'reg_lambda':0.743,'reg_alpha':0.175,'gamma':0.0164,'n_jobs':4}",""
+2026-10-13 14:01,cat_v2_cluster,cat,0.960941,5/5,"aux,delay,fd_freq,route_full,original,cluster_pca,fd_combo","","{'learning_rate':0.06,'depth':8,'extra_cats':['Flight Distance','fd_x_class','fd_x_travel']}",""

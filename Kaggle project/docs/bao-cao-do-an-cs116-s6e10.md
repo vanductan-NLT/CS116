@@ -109,9 +109,12 @@ LR kém vì quan hệ chữ U và tương tác giữa các rating; KNN khá như
 | cat_v1 | CatBoost depth 8, FD và FD×Class là categorical | | 0,96088 | |
 | cat_v1_k10 | 10 fold | | 0,96108 | |
 | xgb_v2_tuple_k10 | + TE tuple 17 cột, 10 fold | 112 cột | 0,96119 | ≈ xgb_v1_k10 |
-| xgb_v3_cluster_k10 | + PCA/KMeans, 10 fold | 113 cột | [cập nhật] | fold 0 (5-fold): 0,96123 vs 0,96110 |
+| xgb_v3_cluster_k10 | + PCA/KMeans, 10 fold | 113 cột | 0,96121 | = xgb_v1_k10: lợi ích fold 0 (+0,00013) không lặp lại trên 10 fold |
+| xgb_optuna_k10 | tham số Optuna (§5.3), 10 fold | 113 cột | **0,96127** | +0,00006 so với tham số tay |
+| lgbm_v2_aux_k10 | LightGBM + aux, 10 fold | 107 cột | **0,96129** | mô hình đơn tốt nhất |
+| cat_v2_cluster | CatBoost + PCA/KMeans | 115 cột | 0,96094 | +0,00006 so với cat_v1 |
 | xgb_v1_pl / _plh | pseudo-label test (soft / hard, an toàn theo fold) | | 0,96105 / 0,96105 | +2e-5: trong nhiễu |
-| xgb_v1_sd03 | self-distillation (nhãn mềm 0,7·y + 0,3·teacher nội bộ) | | [cập nhật] | fold 0: +4e-5 |
+| xgb_v1_sd03 | self-distillation (nhãn mềm 0,7·y + 0,3·teacher inner-CV) | | 0,96107 | +4e-5: trong nhiễu |
 
 ### 5.3 Tối ưu siêu tham số (bài 11–12)
 
@@ -122,13 +125,13 @@ Cùng bộ feature cuối, XGBoost (GPU), fold 0 của split chung, early stoppi
 | Cấu hình tay (tham khảo) | depth 7, lr 0,02, colsample 0,4 | 1 | – | 0,96110 |
 | GridSearch | depth {5,7,9} × lr {0,02; 0,05} × colsample {0,3; 0,5} | 12 | 187 s | 0,96113 (depth 7, lr 0,02, col 0,3) |
 | Optuna TPE | 8 tham số liên tục (lr, depth, min_child_weight, subsample, colsample, λ, α, γ) | 30 | 560 s | **0,96130** (depth 9, lr 0,024, mcw 29, subsample 0,94, col 0,55, λ 0,74, α 0,18) |
-| Optuna best, kiểm chứng 5-fold | | | | [cập nhật] |
+| Optuna best, kiểm chứng 10-fold (xgb_optuna_k10) | | | | 0,96127 vs 0,96121 (tham số tay, cùng feature) |
 
 Nhận xét: (1) lr cao (0,05) luôn kém lr thấp dù early stopping – tối ưu theo bước nhỏ quan trọng hơn số cây; (2) GridSearch tốn 12 lần huấn luyện chỉ để xác nhận cấu hình tay vì lưới thô; TPE khai thác vùng tốt (min_child_weight lớn + cây sâu) mà lưới không có, cho +0,0002 với số lần huấn luyện gấp 2,5; (3) biên độ toàn bộ không gian chỉ ±0,0005 – siêu tham số không phải nơi tạo khác biệt lớn ở bài này, feature engineering và ensemble mới là.
 
 ### 5.4 Học không giám sát (bài 5–6)
 
-PCA 4 thành phần trên 13 rating giải thích … % phương sai; KMeans 12 cụm tách rõ nhóm "hài lòng cao mọi mặt" / "online kém" / "trên máy bay kém". Dùng làm feature: [cập nhật] – mô hình cây đã tự học được các tương tác này nên lợi ích nhỏ, nhưng cụm giúp diễn giải (xem hình).
+PCA 4 thành phần + KMeans 12 cụm trên 13 rating đã chuẩn hoá (fit trên train+test, không dùng nhãn) → 6 feature `pca_0..3`, `kmeans_12`, `kmeans_dist`. Kết quả: XGBoost fold 0 tăng 0,96110 → 0,96123 nhưng trên 10 fold đầy đủ 0,96121 = không đổi; CatBoost +0,00006. Kết luận: mô hình cây đã tự học được cấu trúc tương quan giữa các rating (hai nhóm "online" và "trên máy bay"), nên góc nhìn không giám sát chủ yếu có giá trị **diễn giải** (cụm "hài lòng mọi mặt", "online kém", "trên máy bay kém") hơn là tăng AUC. Bài học phương pháp: một cải thiện +0,0001 trên 1 fold chưa phải bằng chứng – phải xác nhận trên toàn bộ split.
 
 ## 6. Ensemble (bài 13)
 

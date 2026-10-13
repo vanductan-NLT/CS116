@@ -1,0 +1,13 @@
+{
+  "id": "vanductan/s6e10-tabpfn-finetune-fold",
+  "title": "S6E10 TabPFN finetune fold",
+  "code_file": "tabpfn_finetune_kaggle.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [],
+  "competition_sources": ["playground-series-s6e10"],
+  "kernel_sources": []
+}

@@ -10,8 +10,12 @@ Full run:
   python src/tabpfn_finetune.py --time-limit 2400 --name tabpfn_ft
 """
 import argparse
+import os
 import time
 from pathlib import Path
+
+# validation/final inference predicts this many query rows per forward pass (default 32768 blows up VRAM)
+os.environ.setdefault("TABPFN_MAX_BATCHED_TEST_ROWS", "2048")
 
 import numpy as np
 import pandas as pd
@@ -57,7 +61,7 @@ def build_matrix(df: pd.DataFrame):
     return X.values.astype(np.float32), cat_idx
 
 
-def predict_chunked(clf, X, chunk=8192):
+def predict_chunked(clf, X, chunk=1024):
     return np.concatenate([clf.predict_proba(X[i:i + chunk])[:, 1] for i in range(0, len(X), chunk)])
 
 
@@ -70,7 +74,7 @@ def main():
     folds = get_folds(train)
     run_folds = [int(f) for f in a.only_folds.split(",") if f] or list(range(5))
     oof, test_pred = np.full(len(X), np.nan), np.zeros(len(X_te))
-    torch.cuda.set_per_process_memory_fraction(0.92)
+    torch.cuda.set_per_process_memory_fraction(0.9)  # never spill into Windows shared memory
 
     for k in run_folds:
         t0 = time.time()
@@ -84,7 +88,9 @@ def main():
             early_stopping=True, early_stopping_patience=4, random_state=k, use_activation_checkpointing=True,
             save_checkpoint_interval=None,
         )
-        clf.fit(X[tr], y[tr], output_dir=Path(LOG_DIR / f"tabpfn_ft_fold{k}"))
+        # explicit small validation set: early stopping signal without scoring 100k+ rows every epoch
+        v = np.random.default_rng(1000 + k).choice(va, min(10000, len(va)), replace=False)
+        clf.fit(X[tr], y[tr], X_val=X[v], y_val=y[v], output_dir=Path(LOG_DIR / f"tabpfn_ft_fold{k}"))
         print(f"fold {k}: fine-tuned in {time.time() - t0:.0f}s, peak VRAM {torch.cuda.max_memory_allocated() / 2**30:.2f} GB",
               flush=True)
         oof[va] = predict_chunked(clf, X[va])
