@@ -1,0 +1,22 @@
+,dtype,n_unique,missing_train,missing_test,univariate_auc
+Age,int64,75,0,0,0.6244
+Arrival Delay in Minutes,float64,168,292,130,0.5162
+Baggage handling,int64,5,0,0,0.6549
+Checkin service,int64,6,0,0,0.6355
+Class,str,3,0,0,0.7822
+Cleanliness,int64,6,0,0,0.6894
+Customer Type,str,2,0,0,0.5862
+Departure Delay in Minutes,int64,167,0,0,0.5085
+Departure/Arrival time convenient,int64,6,0,0,0.5265
+Ease of Online booking,int64,6,0,0,0.609
+Flight Distance,int64,3474,0,0,0.6956
+Food and drink,int64,6,0,0,0.6211
+Gate location,int64,6,0,0,0.5137
+Gender,str,2,0,0,0.5056
+Inflight entertainment,int64,6,0,0,0.7445
+Inflight wifi service,int64,6,0,0,0.6627
+Leg room service,int64,6,0,0,0.6877
+On-board service,int64,6,0,0,0.6993
+Online boarding,int64,6,0,0,0.8404
+Seat comfort,int64,6,0,0,0.7321
+Type of Travel,str,2,0,0,0.7027

@@ -1,0 +1,6 @@
+[L1_delay] CV AUC = 0.959135  n_features=24  time=62s
+[L2_fdfreq] CV AUC = 0.960035  n_features=25  time=112s
+[L3_fdte] CV AUC = 0.960743  n_features=26  time=117s
+[L4_route] CV AUC = 0.960633  n_features=36  time=55s
+[L5_rating] CV AUC = 0.960531  n_features=40  time=60s
+[L6_cross] CV AUC = 0.960595  n_features=41  time=63s

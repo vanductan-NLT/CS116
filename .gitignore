@@ -1,0 +1,16 @@
+# large / generated artifacts of the Kaggle project (regenerate with src/ scripts)
+Kaggle project/.venv/
+Kaggle project/data/
+Kaggle project/oof/
+Kaggle project/test_preds/
+Kaggle project/submissions/
+Kaggle project/logs/tabpfn_ft_*/
+Kaggle project/logs/*.db
+# secrets
+kaggle.json
+access_token
+.env
+# python / notebooks
+__pycache__/
+.ipynb_checkpoints/
+catboost_info/
