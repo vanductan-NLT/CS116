@@ -172,7 +172,9 @@ Ghi nhận tác giả OOF công khai: Chris Deotte, goodpjw2008, Dariush Afshar,
 
 **Cái gì không hiệu quả** (đều đo trên cùng fold): thống kê rating, cross phân loại, pseudo-labeling test, self-distillation, TE tuple 17 cột, meta-learner phi tuyến/phân khúc, thêm dòng gốc vào train. Giá trị của các thí nghiệm âm: tiết kiệm thời gian và chứng minh trần của bài toán (~0,9622) là do nhiễu nhãn của generator, không phải do mô hình.
 
-**Hạn chế.** Phần lớn thành viên stack là của cộng đồng; đóng góp riêng là pipeline feature + 6 mô hình + phân tích meta-learner. GPU 6 GB không chạy được TabPFN full-context (cần ~20 GB).
+**Thử nghiệm fine-tune TabPFN-3.5** (`src/tabpfn_finetune.py`, `kaggle_kernels/tabpfn-finetune/`). Mọi TabPFN trong pool đều chỉ dùng in-context learning; ý tưởng là cập nhật trọng số trên 560k dòng train để có một "họ" mô hình mới. Kết quả: (1) trên GPU 6 GB tại chỗ không khả thi – trạng thái huấn luyện chiếm 4,4 GB nên mọi bước inference đều tràn bộ nhớ, kể cả 2 000 dòng/bước; (2) trên Kaggle T4 (16 GB, 24 000 dòng/bước, 4 epoch, lr 1e-5, inference với context 50 000 dòng): fold 0 AUC 0,95897, fold 1 0,95797 – **thấp hơn 0,002 so với TabPFN không fine-tune dùng full context (0,9611)**; loss huấn luyện gần như không giảm (0,22–0,24), và mỗi fold mất 3 h 45 (inference 300k dòng test chiếm 2 h). Kết luận: với mô hình nền tảng dạng bảng, mất mát do rút ngắn context lớn hơn nhiều so với lợi ích của fine-tune ngắn; chi phí inference (attention trên context) mới là nút thắt, không phải huấn luyện. Thí nghiệm dừng sau 2 fold.
+
+**Hạn chế.** Phần lớn thành viên stack là của cộng đồng; đóng góp riêng là pipeline feature + 12 mô hình + phân tích meta-learner + các thí nghiệm âm có số liệu. GPU 6 GB không chạy được TabPFN full-context (cần ~17–20 GB).
 
 ## 8. Kết luận
 

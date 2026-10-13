@@ -8,11 +8,11 @@ Thay các chỗ [ ] trước khi gửi. Giữ ngắn; thầy chỉ cần 3 thôn
 
 Kính gửi thầy Nguyễn Vinh Tiệp,
 
-Em là [Họ tên], MSSV [MSSV], lớp CS116.R11. Em xin báo cáo đề tài đồ án cuối kỳ theo Phương án 1 (cuộc thi Kaggle đang diễn ra, dữ liệu dạng bảng):
+Em là Văn Đức Tân, MSSV [MSSV], lớp CS116.R11. Em xin báo cáo đề tài đồ án cuối kỳ theo Phương án 1 (cuộc thi Kaggle đang diễn ra, dữ liệu dạng bảng):
 
 - **Cuộc thi:** Kaggle Playground Series S6E10 – *Predicting Airline Satisfaction* (phân lớp nhị phân, độ đo ROC AUC, 01–31/10/2026), link: https://www.kaggle.com/competitions/playground-series-s6e10
 - **Hình thức:** em làm **cá nhân (nhóm 1 người)**. Nếu thầy yêu cầu đồ án phải làm theo nhóm, em xin thầy cho biết để em điều chỉnh.
-- **Tiến độ hiện tại (ngày [dd/mm]):** điểm public leaderboard **[0,9618x]**, hạng **[xx]/[~1700] đội (top [x] %)**; nested cross-validation 0,9622. Pipeline gồm EDA, tiền xử lý và feature engineering (target encoding trong fold, hồ sơ tuyến bay, dữ liệu gốc làm teacher), so sánh Logistic Regression / KNN / Random Forest / LightGBM / XGBoost / CatBoost, tối ưu siêu tham số bằng Optuna và GridSearch, PCA/KMeans, và stacking nhiều họ mô hình.
+- **Tiến độ hiện tại (13/10/2026):** điểm public leaderboard **0,96185**, hạng **93/1695 đội (top 5,5 %)**; nested cross-validation 0,9622. Pipeline gồm EDA, tiền xử lý và feature engineering (target encoding trong fold, hồ sơ tuyến bay, dữ liệu gốc làm teacher), so sánh Logistic Regression / KNN / Random Forest / LightGBM / XGBoost / CatBoost, tối ưu siêu tham số bằng Optuna và GridSearch, PCA/KMeans, và stacking nhiều họ mô hình.
 - **Mã nguồn:** https://github.com/vanductan-NLT/CS116 (thư mục `Kaggle project/`). Kết quả private leaderboard sẽ có sau khi cuộc thi đóng (01/11/2026); em sẽ bổ sung vào báo cáo.
 
 Em xin hỏi thầy 2 điều để hoàn thiện báo cáo đúng yêu cầu:
