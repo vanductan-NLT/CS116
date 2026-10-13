@@ -50,14 +50,34 @@ def parse():
     return p.parse_args()
 
 
-def build_matrix(df: pd.DataFrame):
-    """Raw 21 columns + FD//10; Flight Distance and FD//10 declared categorical (community's best TabPFN setup)."""
+def build_matrix(df: pd.DataFrame, bpe: bool = False):
+    """Raw 21 columns + FD//10; Flight Distance and FD//10 declared categorical (community's best TabPFN setup).
+
+    bpe=True adds generator-aware columns (S6E9 2nd/3rd place): GPT-2 BPE tokens of the numeric strings of
+    Flight Distance / Age / delays (first token, last token, token-length shape, token count) and the FD digits.
+    """
     X = df.drop(columns=["id", TARGET], errors="ignore").copy()
     for c in CAT_COLS:
         X[c] = X[c].astype("category").cat.codes
     X["Arrival Delay in Minutes"] = X["Arrival Delay in Minutes"].fillna(-1)
     X["fd10"] = X["Flight Distance"] // 10
-    cat_idx = [X.columns.get_loc(c) for c in CAT_COLS + ["Flight Distance", "fd10"]]
+    cats = CAT_COLS + ["Flight Distance", "fd10"]
+    if bpe:
+        from tokenizers import Tokenizer
+        tok = Tokenizer.from_pretrained("gpt2")
+        for c, tag in [("Flight Distance", "fd"), ("Age", "age"), ("Departure Delay in Minutes", "dep"),
+                       ("Arrival Delay in Minutes", "arr")]:
+            vals = X[c].astype(int)
+            enc = {v: tok.encode(f" {v}").tokens for v in vals.unique()}
+            X[f"bpe_{tag}_first"] = vals.map(lambda v: enc[v][0]).astype("category").cat.codes
+            X[f"bpe_{tag}_last"] = vals.map(lambda v: enc[v][-1]).astype("category").cat.codes
+            X[f"bpe_{tag}_shape"] = vals.map(lambda v: "-".join(str(len(t.lstrip("Ġ"))) for t in enc[v])).astype("category").cat.codes
+            X[f"bpe_{tag}_n"] = vals.map(lambda v: len(enc[v]))
+            cats += [f"bpe_{tag}_first", f"bpe_{tag}_last", f"bpe_{tag}_shape"]
+        fd = X["Flight Distance"].astype(int)
+        for d in range(4):  # FD digits (units .. thousands)
+            X[f"fd_digit_{d}"] = (fd // 10**d) % 10
+    cat_idx = [X.columns.get_loc(c) for c in cats]
     return X.values.astype(np.float32), cat_idx
 
 

@@ -113,6 +113,9 @@ LR kém vì quan hệ chữ U và tương tác giữa các rating; KNN khá như
 | xgb_optuna_k10 | tham số Optuna (§5.3), 10 fold | 113 cột | **0,96127** | +0,00006 so với tham số tay |
 | lgbm_v2_aux_k10 | LightGBM + aux, 10 fold | 107 cột | **0,96129** | mô hình đơn tốt nhất |
 | cat_v2_cluster | CatBoost + PCA/KMeans | 115 cột | 0,96094 | +0,00006 so với cat_v1 |
+| xgb_v4_bpe_k10 | + token BPE GPT-2 của chuỗi số (FD, Age, delay) + digit, 10 fold | 122 cột | 0,96125 | +0,00005 so với xgb_v1_k10 |
+| xgb_v5_pl_teacher5 | + pseudo-label mềm 300k dòng test từ teacher = trung bình 4 model riêng (an toàn theo fold) | 122 cột | 0,96114 | +0,0001 so với xgb_v1; teacher đơn lẻ chỉ +0,00002 |
+| lgbm_v3_pl_teacher5 | LightGBM cùng công thức | 122 cột | 0,96117 | +0,00004 so với lgbm_v2_aux |
 | xgb_v1_pl / _plh | pseudo-label test (soft / hard, an toàn theo fold) | | 0,96105 / 0,96105 | +2e-5: trong nhiễu |
 | xgb_v1_sd03 | self-distillation (nhãn mềm 0,7·y + 0,3·teacher inner-CV) | | 0,96107 | +4e-5: trong nhiễu |
 
@@ -173,6 +176,8 @@ Ghi nhận tác giả OOF công khai: Chris Deotte, goodpjw2008, Dariush Afshar,
 **Cái gì không hiệu quả** (đều đo trên cùng fold): thống kê rating, cross phân loại, pseudo-labeling test, self-distillation, TE tuple 17 cột, meta-learner phi tuyến/phân khúc, thêm dòng gốc vào train. Giá trị của các thí nghiệm âm: tiết kiệm thời gian và chứng minh trần của bài toán (~0,9622) là do nhiễu nhãn của generator, không phải do mô hình.
 
 **Thử nghiệm fine-tune TabPFN-3.5** (`src/tabpfn_finetune.py`, `kaggle_kernels/tabpfn-finetune/`). Mọi TabPFN trong pool đều chỉ dùng in-context learning; ý tưởng là cập nhật trọng số trên 560k dòng train để có một "họ" mô hình mới. Kết quả: (1) trên GPU 6 GB tại chỗ không khả thi – trạng thái huấn luyện chiếm 4,4 GB nên mọi bước inference đều tràn bộ nhớ, kể cả 2 000 dòng/bước; (2) trên Kaggle T4 (16 GB, 24 000 dòng/bước, 4 epoch, lr 1e-5, inference với context 50 000 dòng): fold 0 AUC 0,95897, fold 1 0,95797 – **thấp hơn 0,002 so với TabPFN không fine-tune dùng full context (0,9611)**; loss huấn luyện gần như không giảm (0,22–0,24), và mỗi fold mất 3 h 45 (inference 300k dòng test chiếm 2 h). Kết luận: với mô hình nền tảng dạng bảng, mất mát do rút ngắn context lớn hơn nhiều so với lợi ích của fine-tune ngắn; chi phí inference (attention trên context) mới là nút thắt, không phải huấn luyện. Thí nghiệm dừng sau 2 fold.
+
+**Học từ writeup tháng trước (S6E9).** Ba bài hạng 1–3 của S6E9 (Chris Deotte; Team Alicia; Masaya Kawamata – đang hạng 2 public S6E10) gợi ý: (a) token BPE GPT‑2 của chuỗi số (dữ liệu synthetic sinh bởi mô hình ngôn ngữ) +0,0013 cho TabPFN ở S6E9; (b) pseudo-label mềm từ teacher mạnh; (c) TabPFN full-context với KV cache int8. Kiểm chứng trên S6E10: (a) với XGBoost +0,00005 (10 fold), với TabPFN **−0,00025** (fold 0, context 100k: 0,95864 → 0,95839) – cấu trúc "mã tuyến" của Flight Distance đã được bắt bằng khai báo categorical, cột token chỉ làm loãng; (b) +0,0001 cho model đơn nhưng **0 cho stack** (0,962218 vs 0,962222) vì teacher chính là các member sẵn có – distillation không tạo thông tin mới; (c) chạy trên Kaggle T4 (xem §7). Bài học: mẹo "generator-aware" phụ thuộc vào bộ dữ liệu cụ thể; phải đo lại, không chuyển mặc nhiên.
 
 **Hạn chế.** Phần lớn thành viên stack là của cộng đồng; đóng góp riêng là pipeline feature + 12 mô hình + phân tích meta-learner + các thí nghiệm âm có số liệu. GPU 6 GB không chạy được TabPFN full-context (cần ~17–20 GB).
 

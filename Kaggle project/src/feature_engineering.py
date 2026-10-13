@@ -63,6 +63,20 @@ def build_static_features(train: pd.DataFrame, test: pd.DataFrame, groups: set[s
         X["tuple_ratings"] = pd.util.hash_pandas_object(full[RATING_COLS].astype(str), index=False).values.astype("int64")
         X["tuple17_count"] = X["tuple17"].map(X["tuple17"].value_counts()).astype("int32")
 
+    if "bpe" in groups:  # generator-aware: group numeric values by their GPT-2 BPE tokenisation (S6E9 3rd place)
+        from tokenizers import Tokenizer
+        tok = Tokenizer.from_pretrained("gpt2")
+        for c, tag in [(FD, "fd"), ("Age", "age"), ("Departure Delay in Minutes", "dep")]:
+            vals = full[c].fillna(-1).astype(int)
+            enc = {v: tok.encode(f" {v}").tokens for v in vals.unique()}
+            first = vals.map(lambda v: enc[v][0]).astype("category").cat.codes.astype("int16")
+            last = vals.map(lambda v: enc[v][-1]).astype("category").cat.codes.astype("int16")
+            shape = vals.map(lambda v: "-".join(str(len(t.lstrip("Ġ"))) for t in enc[v])).astype("category").cat.codes
+            X[f"bpe_{tag}_first"] = first
+            X[f"bpe_{tag}_last"] = last
+            X[f"bpe_{tag}_shape"] = shape.astype("int16")
+            X[f"bpe_{tag}_first_x_shape"] = (first.astype("int32") * 64 + shape.astype("int32")).astype("int32")
+
     if "fd_combo" in groups:  # integer keys meant for in-fold target encoding (route x context)
         X["fd_x_class"] = (X[FD] * 3 + X["Class"]).astype("int32")
         X["fd_x_travel"] = (X[FD] * 2 + X["Type of Travel"]).astype("int32")

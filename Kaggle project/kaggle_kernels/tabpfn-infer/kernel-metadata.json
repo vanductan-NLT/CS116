@@ -1,0 +1,13 @@
+{
+  "id": "vanductan/s6e10-tabpfn-fullctx-bpe",
+  "title": "S6E10 TabPFN full-context BPE",
+  "code_file": "tabpfn_infer_kaggle.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [],
+  "competition_sources": ["playground-series-s6e10"],
+  "kernel_sources": []
+}
