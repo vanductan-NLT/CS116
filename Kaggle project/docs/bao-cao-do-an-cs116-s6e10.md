@@ -169,6 +169,8 @@ Ghi nhận tác giả OOF công khai: Chris Deotte, goodpjw2008, Dariush Afshar,
 
 **Bảng xếp hạng.** [cập nhật] Public 0,96185 ≈ hạng 88/1674 (13/10). Private: …
 
+**Cơ chế xếp hạng public.** Public LB chỉ chấm 20 % test (~60k dòng) nên nhiễu giữa hai bài gần giống nhau là ±0,0001; 48 đội đồng điểm 0,96187 là cùng một file notebook công khai và chiếm trọn hạng 14–61, đẩy bài 0,96185 (chênh 0,00002 = nhiễu) xuống hạng ~111. Để không bị "đồng điểm chiếm chỗ", bài `twin_v2_dariush` lấy trung bình hạng của stack riêng (`stack_pool_v2`) và stack công khai của Dariush Afshar (tương quan hạng 0,99974 – hai stack chứa cùng thông tin): public 0,96187, hạng ≈ 14–61. Đây là thao tác giảm phương sai, trung tính về mặt thông tin; thứ hạng private giữa các bài trong nhóm này sẽ do nhiễu quyết định.
+
 **CV vs LB.** Chênh nested CV − public LB ≈ 0,00037 ổn định cho mọi bài (0,96222 → 0,96185; 0,96206 → 0,96159) → public LB khó hơn train một chút nhưng thứ tự được bảo toàn; chênh lệch 1e-5 giữa các stack nằm dưới nhiễu của 60k dòng public. Vì vậy chọn bài cuối theo nested CV.
 
 **Cái gì hiệu quả.** (1) Coi `Flight Distance` là mã tuyến: +0,0017. (2) Bộ dữ liệu gốc làm teacher thay vì nối dòng: +0,0003. (3) 10 fold: +0,0002. (4) Ghép nhiều *họ* mô hình khác nhau (GBDT + MLP + foundation model): +0,0010 so với mô hình đơn tốt nhất.
