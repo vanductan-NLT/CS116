@@ -1,17 +1,20 @@
 {
-  "id": "vanductan/s6e10-tabpfn-full-context-bpe",
-  "title": "S6E10 TabPFN full-context BPE",
-  "code_file": "tabpfn_infer_kaggle.py",
-  "language": "python",
-  "kernel_type": "script",
-  "is_private": true,
-  "enable_gpu": true,
-  "enable_internet": true,
-  "dataset_sources": [
-    "vanductan/s6e10-route-fe-features"
-  ],
-  "competition_sources": [
-    "playground-series-s6e10"
-  ],
-  "kernel_sources": []
+    "id":  "vanductan/s6e10-tabpfn-full-context-bpe",
+    "title":  "S6E10 TabPFN full-context BPE",
+    "code_file":  "tabpfn_infer_kaggle.py",
+    "language":  "python",
+    "kernel_type":  "script",
+    "is_private":  true,
+    "enable_gpu":  true,
+    "enable_internet":  true,
+    "dataset_sources":  [
+                            "vanductan/s6e10-route-fe-features",
+                            "vanductan/s6e10-tabpfn35-weights"
+                        ],
+    "competition_sources":  [
+                                "playground-series-s6e10"
+                            ],
+    "kernel_sources":  [
+
+                       ]
 }

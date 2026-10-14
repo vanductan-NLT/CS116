@@ -23,12 +23,19 @@ CTX_SCREEN = int(os.environ.get("CTX_SCREEN", "100000"))
 N_EST = int(os.environ.get("N_EST", "1"))
 FORCE_FE = os.environ.get("FORCE_FE", "")  # "1"/"0" to skip the screen
 
-try:
-    from kaggle_secrets import UserSecretsClient
-    token = UserSecretsClient().get_secret("TABPFN_TOKEN").strip()
-except Exception as e:  # noqa: BLE001
-    sys.exit(f"Kaggle secret TABPFN_TOKEN is not attached ({e!r}).")
-os.environ["TABPFN_TOKEN"] = token
+import glob as _glob
+
+# Preferred path (works for API-triggered runs, which get no Kaggle secrets): load the checkpoint from the
+# attached private dataset `s6e10-tabpfn35-weights`; with a local weights file the library needs no license call.
+_w = _glob.glob("/kaggle/input/**/tabpfn-v3.5-*.safetensors", recursive=True)
+MODEL_PATH = _w[0] if _w else None
+if MODEL_PATH is None:  # fallback: download with the user's Kaggle secret (UI-triggered runs only)
+    try:
+        from kaggle_secrets import UserSecretsClient
+        os.environ["TABPFN_TOKEN"] = UserSecretsClient().get_secret("TABPFN_TOKEN").strip()
+    except Exception as e:  # noqa: BLE001
+        sys.exit(f"No weights dataset attached and no TABPFN_TOKEN secret available ({e!r}).")
+print("weights:", MODEL_PATH or "download via token", flush=True)
 os.environ["TABPFN_NO_BROWSER"] = "1"
 os.environ["TABPFN_MAX_BATCHED_TEST_ROWS"] = "32768"
 subprocess.run([sys.executable, "-m", "pip", "install", "-q", "tabpfn>=9.2.0"], check=True)
@@ -100,9 +107,10 @@ def with_fe(X, fe, te, llr=None):
 
 
 def make_clf(seed):
+    kw = {"model_path": MODEL_PATH} if MODEL_PATH else {}
     return TabPFNClassifier(n_estimators=N_EST, device="cuda", ignore_pretraining_limits=True, random_state=seed,
                             categorical_features_indices=cat_idx, fit_mode="fit_with_cache",
-                            kv_cache_precision="int8", memory_saving_mode=True)
+                            kv_cache_precision="int8", memory_saving_mode=True, **kw)
 
 
 def predict(clf, Xq, chunk=16384):
