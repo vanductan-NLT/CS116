@@ -1,7 +1,7 @@
 # Báo cáo đồ án CS116 – Dự đoán mức độ hài lòng hành khách hàng không (Kaggle Playground S6E10)
 
-- Môn: CS116.R11 – Lập trình Python cho máy học, GV: TS. Nguyễn Vinh Tiệp
-- Sinh viên: [Họ tên – MSSV]
+- Môn: CS116.R11 – Lập trình Python cho máy học, GV: Nguyễn Đức Vũ
+- Sinh viên: Văn Đức Tân – 24521586 (làm cá nhân; thầy xác nhận đồ án không bắt buộc làm nhóm)
 - Cuộc thi: Kaggle Playground Series S6E10 "Predicting Airline Satisfaction" (01–31/10/2026), https://www.kaggle.com/competitions/playground-series-s6e10
 - Mã nguồn: https://github.com/vanductan-NLT/CS116 (thư mục `Kaggle project/`)
 
