@@ -1,0 +1,13 @@
+{
+  "id": "vanductan/s6e10-llm-surrogate-llr",
+  "title": "S6E10 LLM surrogate LLR",
+  "code_file": "llm_surrogate_kaggle.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": ["teejmahal20/airline-passenger-satisfaction"],
+  "competition_sources": ["playground-series-s6e10"],
+  "kernel_sources": []
+}

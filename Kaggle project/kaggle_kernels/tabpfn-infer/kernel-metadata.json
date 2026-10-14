@@ -1,5 +1,5 @@
 {
-  "id": "vanductan/s6e10-tabpfn-fullctx-bpe",
+  "id": "vanductan/s6e10-tabpfn-full-context-bpe",
   "title": "S6E10 TabPFN full-context BPE",
   "code_file": "tabpfn_infer_kaggle.py",
   "language": "python",
@@ -7,7 +7,11 @@
   "is_private": true,
   "enable_gpu": true,
   "enable_internet": true,
-  "dataset_sources": [],
-  "competition_sources": ["playground-series-s6e10"],
+  "dataset_sources": [
+    "vanductan/s6e10-route-fe-features"
+  ],
+  "competition_sources": [
+    "playground-series-s6e10"
+  ],
   "kernel_sources": []
 }

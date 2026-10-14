@@ -58,6 +58,12 @@ def build_static_features(train: pd.DataFrame, test: pd.DataFrame, groups: set[s
         X["kmeans_12"] = km.predict(R).astype("int8")
         X["kmeans_dist"] = np.min(km.transform(R), axis=1).astype("float32")
 
+    if "llr" in groups:  # generator-surrogate log-likelihood ratio from distilgpt2 fine-tuned on the ORIGINAL data only
+        from config import DATA_DIR
+        llr = np.concatenate([np.load(DATA_DIR / "llr_train.npy"), np.load(DATA_DIR / "llr_test.npy")]).astype("float32")
+        X["llr"] = llr
+        X["llr_clip"] = np.clip(llr, -20, 20)
+
     if "tuple_keys" in groups:  # hashed discrete tuples (49% of rows share one) for in-fold target encoding
         X["tuple17"] = pd.util.hash_pandas_object(full[RATING_COLS + CAT_COLS].astype(str), index=False).values.astype("int64")
         X["tuple_ratings"] = pd.util.hash_pandas_object(full[RATING_COLS].astype(str), index=False).values.astype("int64")
