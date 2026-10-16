@@ -114,14 +114,23 @@ def main():
         z = zipfile.ZipFile(zips[-1])
         lb = pd.read_csv(io.BytesIO(z.read(z.namelist()[0])))
         s = lb["Score"].astype(float).sort_values(ascending=False).values
-        subs = run([KAGGLE, "competitions", "submissions", "-c", COMPETITION, "-v"], timeout=120)
-        try:
-            best = pd.read_csv(io.StringIO(subs))["publicScore"].astype(float).max()
-        except Exception:  # noqa: BLE001
-            best = 0.96185
-        rank = int((s > best).sum() + 1)
-        print(f"LB: our best public {best:.5f} -> rank {rank}/{len(s)} (top {100 * rank / len(s):.1f}%), #1 = {s[0]:.5f}, "
-              f"top-10% cutoff = {s[int(len(s) * 0.1)]:.5f}")
+        # the submissions endpoint times out now and then: retry, and never report a made-up score
+        best = None
+        for _ in range(3):
+            try:
+                subs = run([KAGGLE, "competitions", "submissions", "-c", COMPETITION, "-v"], timeout=120)
+                best = pd.to_numeric(pd.read_csv(io.StringIO(subs))["publicScore"], errors="coerce").max()
+                break
+            except Exception:  # noqa: BLE001
+                continue
+        if best is None or pd.isna(best):
+            print(f"LB: could not read our submissions (API timeout) | #1 = {s[0]:.5f}, "
+                  f"top-10% cutoff = {s[int(len(s) * 0.1)]:.5f}, teams = {len(s)} -> run src/lb_rank.py")
+        else:
+            better, tied = int((s > best).sum()), int((s == best).sum())
+            print(f"LB: our best public {best:.5f} -> rank {better + 1}..{better + tied}/{len(s)} "
+                  f"(top {100 * (better + 1) / len(s):.1f}%..{100 * (better + tied) / len(s):.1f}%), #1 = {s[0]:.5f}, "
+                  f"top-10% cutoff = {s[int(len(s) * 0.1)]:.5f}")
 
 
 if __name__ == "__main__":
