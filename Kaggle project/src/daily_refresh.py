@@ -51,8 +51,10 @@ def run(cmd, timeout=1800):
 def newest_remote_date(ref):
     """Newest creationDate among a dataset's files, or None on error."""
     out = run([KAGGLE, "datasets", "files", ref, "-v"], timeout=120)
+    # newer CLI versions print a "Next Page Token = ..." line before the CSV header: keep only the table
+    csv_part = "\n".join(line for line in out.splitlines() if "," in line and not line.startswith("Next Page Token"))
     try:
-        df = pd.read_csv(io.StringIO(out))
+        df = pd.read_csv(io.StringIO(csv_part))
         return pd.to_datetime(df["creationDate"]).max().tz_localize(None)
     except Exception:  # noqa: BLE001
         return None
