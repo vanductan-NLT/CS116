@@ -97,7 +97,9 @@ def main():
         line = [l for l in out.splitlines() if "nested CV" in l]
         print(line[-1] if line else out[-500:])
         cv = float(line[-1].split("nested CV   : ")[1].split()[0]) if line else 0.0
-        state["last_import"] = datetime.now().isoformat(timespec="seconds")
+        # Kaggle's creationDate is UTC: store the watermark in UTC too, or a version uploaded in the
+        # 7 hours after a local-time refresh would be skipped as "old"
+        state["last_import"] = datetime.now(timezone.utc).replace(tzinfo=None).isoformat(timespec="seconds")
         if cv > state["best_cv"] + 1e-6:
             print(f"IMPROVED: {cv:.6f} > {state['best_cv']:.6f}")
             if not a.no_submit:
