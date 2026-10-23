@@ -76,10 +76,24 @@ def scan(d, tag):
         if tf.exists():
             add(f"{tag}_{x}", np.load(f), np.load(tf))
     for f in sorted(glob.glob(str(d / "*.npz"))):
+        base = os.path.basename(f)[:-4]
+        if base.endswith("_test"):
+            continue  # handled together with its *_oof.npz twin below
         z = np.load(f)
         keys = ("oof", "test") if "oof" in z.files else ("train", "test") if "train" in z.files else None
         if keys and z[keys[0]].ndim == 1:
-            add(f"{tag}_{os.path.basename(f)[:-4]}", z[keys[0]], z[keys[1]])
+            add(f"{tag}_{base}", z[keys[0]], z[keys[1]])
+            continue
+        # one archive holding many members as oof_<x> / test_<x> pairs (goodpjw2008 series_*.npz)
+        for k in z.files:
+            if k.startswith("oof_") and f"test_{k[4:]}" in z.files and z[k].ndim == 1:
+                add(f"{tag}_{base}_{k[4:]}", z[k], z[f"test_{k[4:]}"])
+        # twin archives X_oof.npz / X_test.npz with the same member keys (goodpjw2008 stack182_lr_lgb)
+        if base.endswith("_oof") and os.path.exists(f[:-8] + "_test.npz"):
+            zt = np.load(f[:-8] + "_test.npz")
+            for k in z.files:
+                if k in zt.files and z[k].ndim == 1:
+                    add(f"{tag}_{base[:-4]}_{k}", z[k], zt[k])
     for f in sorted(glob.glob(str(d / "*_oof.csv"))):
         tf = str(f).replace("_oof.csv", "_test.csv")
         if os.path.exists(tf):

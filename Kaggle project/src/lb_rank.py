@@ -34,7 +34,17 @@ n = len(scores)
 print(f"snapshot {zips[-1].stem.split('-')[-1]} | now {datetime.now():%Y-%m-%d %H:%M} | teams = {n}")
 print(f"#1 = {scores[0]:.5f} | top-10% cutoff (rank {int(n * 0.1)}) = {scores[int(n * 0.1) - 1]:.5f}")
 
-subs = pd.read_csv(io.StringIO(run(["competitions", "submissions", "-c", COMPETITION, "-v"])))
+subs = None
+for _ in range(4):  # the submissions endpoint times out now and then
+    try:
+        subs = pd.read_csv(io.StringIO(run(["competitions", "submissions", "-c", COMPETITION, "-v"])))
+        if "publicScore" in subs.columns:
+            break
+    except Exception:  # noqa: BLE001
+        pass
+    subs = None
+if subs is None:
+    sys.exit("could not read our submissions (API timeout) - retry")
 subs = subs[pd.to_numeric(subs["publicScore"], errors="coerce").notna()].copy()
 subs["publicScore"] = subs["publicScore"].astype(float)
 print("our scored submissions (top 4):")
