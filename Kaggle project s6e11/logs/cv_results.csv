@@ -6,3 +6,5 @@
 2026-11-02 08:13,lgbm_fe1,lgbm,0.946717,5/5,"digits,freq,interact,bool_sum","","{}",""
 2026-11-02 08:20,xgb_d1_fe_orig,xgb,0.947427,5/5,"digits,freq,interact,bool_sum,original","","{'max_depth':1,'learning_rate':0.08,'min_child_weight':20,'colsample_bytree':0.8,'subsample':0.9}",""
 2026-11-02 08:20,xgb_d2_lr02_fe_orig,xgb,0.947524,5/5,"digits,freq,interact,bool_sum,original","","{'max_depth':2,'learning_rate':0.02,'min_child_weight':50,'colsample_bytree':0.6,'subsample':0.8,'reg_lambda':5}",""
+2026-11-02 08:30,xgb_d2_tekeys,xgb,0.948618,5/5,"digits,interact,bool_sum,original,te_keys","keys","{'max_depth':2,'learning_rate':0.05,'min_child_weight':50,'colsample_bytree':0.5,'subsample':0.8,'reg_lambda':5}",""
+2026-11-02 08:31,lgbm_l4_tekeys,lgbm,0.948857,5/5,"digits,interact,bool_sum,original,te_keys","keys","{'num_leaves':4,'learning_rate':0.05,'min_child_samples':200,'colsample_bytree':0.5,'subsample':0.8,'reg_lambda':5}",""

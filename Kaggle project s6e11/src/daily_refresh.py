@@ -25,21 +25,11 @@ KAGGLE = str(ROOT / ".venv" / "Scripts" / "kaggle.exe")
 PY = str(ROOT / ".venv" / "Scripts" / "python.exe")
 STATE = LOG_DIR / "daily_state.json"
 B = DATA_DIR / "public_oof"
-DATASETS = {  # kaggle dataset ref -> local folder name
-    "cdeotte/s6e10-124-public-oof-and-test-predictions": "s6e10-124-public-oof-and-test-predictions",
-    "cdeotte/s6e10-tfm-oof-and-test-predictions": "s6e10-tfm-oof-and-test-predictions",
-    "kagankoral/s6e10-ablation-members-oof": "s6e10-ablation-members-oof",
-    "sadamtorres/ps-s6e10-airline-satisfaction-artifacts": "ps-s6e10-airline-satisfaction-artifacts",
-    "amanatar/s6e10-forge-own-pairs": "s6e10-forge-own-pairs",
-    "goodpjw2008/s6e10-goodpjw2008-extra-members-oof": "s6e10-goodpjw2008-extra-members-oof",
-    "koumeimaki/s6e10-route-tfm-nn-oof": "s6e10-route-tfm-nn-oof",
-    "abdullahsafwan333/oof-dataset": "oof-dataset",
-    "dmitriykolmikov/s6e10-catboost-all-categorical-oof-and-test": "s6e10-catboost-all-categorical-oof-and-test",
-    "dariushafshar/s6e10-golem-oof-library": "s6e10-golem-oof-library",
-    "sachith7/s6e10-stack-oof-predictions": "s6e10-stack-oof-predictions",
-    "megayak/s6e10-oof-library": "s6e10-oof-library",
-    "arhancanli12/s6e10-oof-test-predictions": "s6e10-oof-test-predictions",
-    "najiama/s6e10-oof": "s6e10-oof",
+DATASETS = {  # kaggle dataset ref -> local folder name (must match SOURCES in import_public_pool.py)
+    "alexchilton/s6e11-oof-predictions": "s6e11-oof-predictions",
+    "goodpjw2008/s6e11-fraud-series-artifacts": "s6e11-fraud-series-artifacts",
+    "wguesdon/s6e11-tree-ensemble-predictions": "wguesdon-tree-ensemble",
+    "malyshevdanil/s6e11-cross-fitted-artifacts": "s6e11-cross-fitted-artifacts",
 }
 
 
@@ -65,7 +55,7 @@ def main():
     ap.add_argument("--force-stack", action="store_true")
     ap.add_argument("--no-submit", action="store_true")
     a = ap.parse_args()
-    state = json.loads(STATE.read_text()) if STATE.exists() else {"best_cv": 0.962222, "last_import": "2026-10-13T12:00:00"}
+    state = json.loads(STATE.read_text()) if STATE.exists() else {"best_cv": 0.95090, "last_import": "2026-11-02T01:30:00"}
     last_import = pd.Timestamp(state["last_import"])
     today = datetime.now().strftime("%Y%m%d")
 
@@ -78,6 +68,10 @@ def main():
             run([KAGGLE, "datasets", "download", "-d", ref, "-p", str(B / folder), "--unzip", "-q", "--force"])
             changed.append(ref)
     print(f"sources changed: {len(changed)}")
+    # datasets not yet in DATASETS: printed so a new OOF library can be added by hand
+    out = run([KAGGLE, "datasets", "list", "-s", "s6e11", "--sort-by", "updated", "--page-size", "25"], timeout=120)
+    new = [l for l in out.splitlines() if "/" in l and not any(ref in l for ref in DATASETS)]
+    print("other s6e11 datasets (newest first):\n" + "\n".join(new[:12]))
 
     # 2. newest notebooks mentioning OOF / stack (manual follow-up)
     out = run([KAGGLE, "kernels", "list", "--competition", COMPETITION, "--sort-by", "dateRun", "--page-size", "40", "-v"], timeout=120)
@@ -92,7 +86,6 @@ def main():
     if changed or a.force_stack:
         print(run([PY, str(ROOT / "src" / "import_public_pool.py")])[-400:])
         out = run([PY, str(ROOT / "src" / "stack_oof.py"), "--members", "all",
-                   "--exclude", "base_lr,base_knn,base_rf,base_lgbm_default,xgb_v1_pl,teacher5",
                    "--family-reg", "--quiet", "--out", f"stack_daily_{today}"], timeout=3600)
         line = [l for l in out.splitlines() if "nested CV" in l]
         print(line[-1] if line else out[-500:])
