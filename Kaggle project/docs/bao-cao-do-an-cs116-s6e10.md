@@ -167,7 +167,20 @@ Ghi nhận tác giả OOF công khai: Chris Deotte, goodpjw2008, Dariush Afshar,
 
 ## 7. Kết quả và thảo luận
 
-**Bảng xếp hạng.** Public: `stack_pool_v2` 0,96185 (hạng ~88/1674, 13/10) → `twin_v2_dariush` 0,96187 (hạng 49–103/1825, 14/10) → `twin_v3_consensus_den30` 0,96189 (hạng 63–68/1999, 16/10; 198–207/2535 ngày 21/10 vì bảng đông thêm ~120 đội/ngày copy file public) → `public_hedge_v1` 0,96195 (hạng 134–140/2537, 21/10; 501–506/3622 ngày 31/10) → `public_max_tkms_096223` 0,96223 (**hạng ~82–88/3622, top 2,3 %**, 31/10, file public mượn – xem đoạn "Ngày cuối"). Private: [cập nhật sau 1/11].
+**Bảng xếp hạng.** Public: `stack_pool_v2` 0,96185 (hạng ~88/1674, 13/10) → `twin_v2_dariush` 0,96187 (hạng 49–103/1825, 14/10) → `twin_v3_consensus_den30` 0,96189 (hạng 63–68/1999, 16/10; 198–207/2535 ngày 21/10 vì bảng đông thêm ~120 đội/ngày copy file public) → `public_hedge_v1` 0,96195 (hạng 134–140/2537, 21/10; 501–506/3622 ngày 31/10) → `public_max_tkms_096223` 0,96223 (hạng 197/3 748 lúc đóng thi, 31/10, file public mượn – xem đoạn "Ngày cuối"). **Private (2/11, sơ bộ): `stack_pool_v2` 0,96236 → hạng 419/3 748 (top 11,2 %)**; ngưỡng top 10 % private = 0,96237 (hạng 375), thiếu 0,00001; #1 private Chris Deotte 0,96318.
+
+**Private của từng bài nộp** (bảng dưới là toàn bộ 11 bài, chứng cứ cho các nhận định trong mục này):
+
+| Bài | Public | Private | Ghi chú |
+|---|---|---|---|
+| `lgbm_v1` (LightGBM đơn) | 0,96057 | 0,96138 | |
+| `stack_all_v1` (85 thành viên) | 0,96159 | 0,96225 | |
+| `stack_pool_v1` / `v2` / `v3` / `stack_daily_20261017` (231–232 thành viên, nested CV 0,96222) | 0,96184–0,96185 | **0,96236** | bài số 1 được chọn |
+| `twin_v2_dariush`, `twin_v3_consensus_den30` | 0,96187 / 0,96189 | 0,96237 | +0,00001 so với stack thuần, đúng mức nhiễu |
+| `public_hedge_v1` (blend 50 % file public) | 0,96195 | 0,96236 | không hơn stack thuần |
+| `public_max_tkms_096223` (file public mượn) | **0,96223** | **0,96213** | bài số 2; **rớt 0,00010 đúng như dự đoán** |
+
+Ba kết luận đo được: (1) **nested CV dự đoán private rất tốt**: 0,96222 → 0,96236 (private *cao hơn* CV, nên khoảng chênh CV–public 0,00037 là do public split khó hơn, không phải do overfit); (2) mọi bài chọn theo CV nằm trong dải 0,96236–0,96237 (= nhiễu), xác nhận "cao nguyên" là thật; (3) file khớp public LB rớt 0,00010 ở private và trong khi đó public #1 (0,96473) tụt khỏi top, #1 private là một stack sạch (Chris Deotte) – đúng cơ chế đã phân tích ở trên. Nếu chọn `twin_v3` thay vì `stack_pool_v2` thì đội đã vào top 10 % (0,96237), nhưng chênh 0,00001 nằm dưới mức nhiễu nên không thể biết trước bằng CV.
 
 **Cơ chế xếp hạng public.** Public LB chỉ chấm 20 % test (~60k dòng) nên nhiễu giữa hai bài gần giống nhau là ±0,0001; 48 đội đồng điểm 0,96187 là cùng một file notebook công khai và chiếm trọn hạng 14–61, đẩy bài 0,96185 (chênh 0,00002 = nhiễu) xuống hạng ~111. Để không bị "đồng điểm chiếm chỗ", bài `twin_v2_dariush` lấy trung bình hạng của stack riêng (`stack_pool_v2`) và stack công khai của Dariush Afshar (tương quan hạng 0,99974 – hai stack chứa cùng thông tin): public 0,96187, hạng ≈ 14–61. Đây là thao tác giảm phương sai, trung tính về mặt thông tin; thứ hạng private giữa các bài trong nhóm này sẽ do nhiễu quyết định.
 
@@ -197,7 +210,7 @@ Ghi nhận tác giả OOF công khai: Chris Deotte, goodpjw2008, Dariush Afshar,
 
 ## 8. Kết luận
 
-Đồ án áp dụng trọn quy trình máy học của môn: EDA đơn/đa biến → tiền xử lý và feature engineering có kiểm soát rò rỉ → so sánh LR/KNN/RF/GBDT → tối ưu siêu tham số → học không giám sát làm feature → stacking với nested CV. Kết quả [cập nhật] đạt top … cuộc thi.
+Đồ án áp dụng trọn quy trình máy học của môn: EDA đơn/đa biến → tiền xử lý và feature engineering có kiểm soát rò rỉ → so sánh LR/KNN/RF/GBDT → tối ưu siêu tham số → học không giám sát làm feature → stacking với nested CV. Kết quả: public 0,96223 (hạng 197/3 748) và **private 0,96236 – hạng 419/3 748 (top 11,2 %)**, thiếu 0,00001 so với ngưỡng top 10 %; mọi bài chọn theo nested CV đều đạt 0,96236–0,96237 ở private, trong khi file khớp public LB rớt 0,00010 – minh chứng cho nguyên tắc chọn mô hình bằng CV thay vì bảng public.
 
 ## Tài liệu tham khảo
 
