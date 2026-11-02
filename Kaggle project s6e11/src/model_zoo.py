@@ -20,15 +20,26 @@ class SklearnModel:
     """Wraps sklearn estimators; KNN is trained on a subsample to stay tractable on 560k rows."""
 
     def __init__(self, kind: str, params: dict, cat_cols: list[str]):
+        params = dict(params)
+        # extra_cats: "keys" = every k_* column (digit / rounded / pair keys) is one-hot encoded too, so the GLM
+        # sees each exact value as its own level (the "GLM on one-hot keys" view of goodpjw2008's series)
+        self.extra_cats = params.pop("extra_cats", None)
+        self.min_frequency = params.pop("min_frequency", 20)
         self.kind, self.params, self.cat_cols = kind, params, cat_cols
 
     def fit(self, X_tr, y_tr, X_va=None, y_va=None, sample_weight=None):
         y_tr = np.round(y_tr).astype(int)  # sklearn baselines only support hard labels; weights ignored
-        num = [c for c in X_tr.columns if c not in self.cat_cols]
+        cats = list(self.cat_cols)
+        if self.extra_cats == "keys":
+            cats += [c for c in X_tr.columns if c.startswith("k_") and c not in cats]
+        elif self.extra_cats:
+            cats += [c for c in self.extra_cats if c in X_tr.columns and c not in cats]
+        num = [c for c in X_tr.columns if c not in cats]
         pre = ColumnTransformer([("num", StandardScaler(), num),
-                                 ("cat", OneHotEncoder(handle_unknown="ignore"), self.cat_cols)])
+                                 ("cat", OneHotEncoder(handle_unknown="infrequent_if_exist", min_frequency=self.min_frequency), cats)])
         if self.kind == "lr":
-            est = LogisticRegression(max_iter=2000, C=self.params.get("C", 1.0))
+            est = LogisticRegression(max_iter=self.params.get("max_iter", 2000), C=self.params.get("C", 1.0),
+                                     solver=self.params.get("solver", "lbfgs"))
         elif self.kind == "knn":
             est = KNeighborsClassifier(n_neighbors=self.params.get("k", 101), n_jobs=-1)
             n = self.params.get("sample", 100_000)
@@ -117,9 +128,58 @@ class CatModel:
         return self.model.predict_proba(X)[:, 1]
 
 
+class EBMModel:
+    """Explainable Boosting Machine (additive model with pairwise terms): the data is near-additive, and the EBM
+    members carry the largest stack weights in the public pool, so it is a useful second family next to GBDTs."""
+
+    def __init__(self, params: dict, cat_cols: list[str]):
+        self.params = {"max_bins": 256, "interactions": 10, "learning_rate": 0.02, "max_rounds": 10000,
+                       "early_stopping_rounds": 100, "n_jobs": 8, "random_state": 0, **params}
+        self.cat_cols = cat_cols
+
+    def fit(self, X_tr, y_tr, X_va, y_va, sample_weight=None):
+        from interpret.glassbox import ExplainableBoostingClassifier
+        feature_types = ["nominal" if c in self.cat_cols else "continuous" for c in X_tr.columns]
+        self.model = ExplainableBoostingClassifier(feature_types=feature_types, **self.params)
+        self.model.fit(X_tr, np.round(y_tr).astype(int))
+        return self
+
+    def predict(self, X):
+        return self.model.predict_proba(X)[:, 1]
+
+
+class RealMLPModel:
+    """pytabkit RealMLP (GPU). Hyper-parameters close to the S6E10 public recipe (Vladimir Demidov); the
+    validation fold is passed only for early stopping of the epoch count, never for fitting."""
+
+    def __init__(self, params: dict, cat_cols: list[str]):
+        self.params = {"device": "cuda", "random_state": 0, "n_epochs": 16, "batch_size": 1024,
+                       "hidden_sizes": [256, 256, 256], "lr": 0.04, "p_drop": 0.15, "plr_sigma": 2.0,
+                       "use_ls": False, "val_metric_name": "1-auc_ovr", "verbosity": 0, **params}
+        self.cat_cols = cat_cols
+
+    def fit(self, X_tr, y_tr, X_va, y_va, sample_weight=None):
+        import pandas as pd
+        from pytabkit import RealMLP_TD_Classifier
+        cats = [c for c in self.cat_cols if c in X_tr.columns]
+        Xa = pd.concat([X_tr, X_va], ignore_index=True)
+        ya = np.concatenate([np.round(y_tr).astype(int), np.asarray(y_va).astype(int)])
+        val_idx = np.arange(len(X_tr), len(Xa))
+        self.model = RealMLP_TD_Classifier(**self.params)
+        self.model.fit(Xa, ya, val_idxs=val_idx, cat_col_names=cats)
+        return self
+
+    def predict(self, X):
+        return self.model.predict_proba(X)[:, 1]
+
+
 def make_model(kind: str, params: dict, cat_cols: list[str]):
     if kind in ("lr", "knn", "rf"):
         return SklearnModel(kind, params, cat_cols)
+    if kind == "ebm":
+        return EBMModel(params, cat_cols)
+    if kind == "realmlp":
+        return RealMLPModel(params, cat_cols)
     if kind == "lgbm":
         return LGBMModel(params)
     if kind == "xgb":

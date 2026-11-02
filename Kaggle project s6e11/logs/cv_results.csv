@@ -8,3 +8,7 @@
 2026-11-02 08:20,xgb_d2_lr02_fe_orig,xgb,0.947524,5/5,"digits,freq,interact,bool_sum,original","","{'max_depth':2,'learning_rate':0.02,'min_child_weight':50,'colsample_bytree':0.6,'subsample':0.8,'reg_lambda':5}",""
 2026-11-02 08:30,xgb_d2_tekeys,xgb,0.948618,5/5,"digits,interact,bool_sum,original,te_keys","keys","{'max_depth':2,'learning_rate':0.05,'min_child_weight':50,'colsample_bytree':0.5,'subsample':0.8,'reg_lambda':5}",""
 2026-11-02 08:31,lgbm_l4_tekeys,lgbm,0.948857,5/5,"digits,interact,bool_sum,original,te_keys","keys","{'num_leaves':4,'learning_rate':0.05,'min_child_samples':200,'colsample_bytree':0.5,'subsample':0.8,'reg_lambda':5}",""
+2026-11-02 08:42,glm_ohk,lr,0.944445,5/5,"digits,interact,bool_sum,original,te_keys","","{'C':0.1,'max_iter':3000,'extra_cats':'keys','min_frequency':30}",""
+2026-11-02 09:31,lgbm_l4_tekeys_v2,lgbm,0.948900,5/5,"interact,bool_sum,original,te_keys","keys","{'num_leaves':4,'learning_rate':0.02,'min_child_samples':500,'colsample_bytree':0.3,'subsample':0.7,'reg_lambda':10,'n_jobs':10}",""
+2026-11-02 09:39,cat_d3_tekeys,cat,0.947952,5/5,"digits,interact,bool_sum,original,te_keys","keys","{'depth':3,'learning_rate':0.06,'l2_leaf_reg':10}",""
+2026-11-02 10:20,realmlp_dig,realmlp,0.945847,5/5,"digits,interact,bool_sum,original","","{}",""

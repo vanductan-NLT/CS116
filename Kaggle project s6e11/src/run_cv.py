@@ -25,7 +25,7 @@ from model_zoo import make_model
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--name", required=True, help="output file stem in oof/ and test_preds/")
-    p.add_argument("--model", required=True, choices=["lr", "knn", "rf", "lgbm", "xgb", "cat"])
+    p.add_argument("--model", required=True, choices=["lr", "knn", "rf", "lgbm", "xgb", "cat", "ebm", "realmlp"])
     p.add_argument("--groups", default="", help="comma list of static feature groups")
     p.add_argument("--te", default="", help="comma list of columns to target-encode in-fold")
     p.add_argument("--params", default="{}", help="JSON dict of model params")
