@@ -14,3 +14,10 @@ access_token
 __pycache__/
 .ipynb_checkpoints/
 catboost_info/
+
+# S6E11 project artifacts
+Kaggle project s6e11/.venv
+Kaggle project s6e11/data/
+Kaggle project s6e11/oof/
+Kaggle project s6e11/test_preds/
+Kaggle project s6e11/submissions/
