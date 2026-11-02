@@ -179,6 +179,16 @@ Ghi nhận tác giả OOF công khai: Chris Deotte, goodpjw2008, Dariush Afshar,
 | `twin_v2_dariush`, `twin_v3_consensus_den30` | 0,96187 / 0,96189 | 0,96237 | +0,00001 so với stack thuần, đúng mức nhiễu |
 | `public_hedge_v1` (blend 50 % file public) | 0,96195 | 0,96236 | không hơn stack thuần |
 | `public_max_tkms_096223` (file public mượn) | **0,96223** | **0,96213** | bài số 2; **rớt 0,00010 đúng như dự đoán** |
+| *Nộp muộn (2/11, chỉ để chấm, không tính hạng):* | | | |
+| `lgbm_v2_aux_k10` (LightGBM + aux, 10 fold; CV 0,96129) | 0,96079 | 0,96161 | model đơn tốt nhất tự huấn luyện |
+| `xgb_optuna_k10` (XGBoost Optuna, 10 fold) | 0,96082 | 0,96151 | |
+| `tabpfn_ctx400k` (TabPFN-3.5 context 400k, thô; OOF 0,96083) | 0,96075 | 0,96161 | |
+| `tabpfn_fe` (TabPFN + feature nhóm tuyến; OOF 0,96097) | 0,96078 | 0,96157 | +FE không hơn ở private (nhiễu) |
+| `stack_own_v1` (stack chỉ mô hình riêng) | 0,96080 | 0,96165 | +0,00004 so với model đơn |
+| `stack_daily_20261023` (291 thành viên; nested CV 0,96222) | 0,96185 | 0,96236 | = stack 232 thành viên |
+| `auc_blend_v1` (blend tối ưu AUC trực tiếp; nested CV 0,96195) | 0,96141 | 0,96217 | kém LR stack 0,0002 ở private, đúng như CV |
+
+Thứ tự private của mọi bài trùng khớp thứ tự nested CV (model đơn ~0,9616 < stack riêng 0,96165 < AUC-blend 0,96217 < stack 85 thành viên 0,96225 < stack 231–291 thành viên 0,96236); chênh CV→private ổn định +0,0001 đến +0,0003.
 
 Ba kết luận đo được: (1) **nested CV dự đoán private rất tốt**: 0,96222 → 0,96236 (private *cao hơn* CV, nên khoảng chênh CV–public 0,00037 là do public split khó hơn, không phải do overfit); (2) mọi bài chọn theo CV nằm trong dải 0,96236–0,96237 (= nhiễu), xác nhận "cao nguyên" là thật; (3) file khớp public LB rớt 0,00010 ở private và trong khi đó public #1 (0,96473) tụt khỏi top, #1 private là một stack sạch (Chris Deotte) – đúng cơ chế đã phân tích ở trên. Nếu chọn `twin_v3` thay vì `stack_pool_v2` thì đội đã vào top 10 % (0,96237), nhưng chênh 0,00001 nằm dưới mức nhiễu nên không thể biết trước bằng CV.
 
