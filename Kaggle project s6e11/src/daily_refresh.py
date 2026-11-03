@@ -32,6 +32,10 @@ DATASETS = {  # kaggle dataset ref -> local folder name (must match SOURCES in i
     "malyshevdanil/s6e11-cross-fitted-artifacts": "s6e11-cross-fitted-artifacts",
     "masayakawamata/s6e11-saved-study-records": "s6e11-saved-study-records",
 }
+KERNELS = {  # notebook ref -> (local folder, regex of output files to fetch); must match SOURCES in import_public_pool.py
+    "lazyyeou/s6e11-digit-trie-te-joint-glm-nested-stack": ("lazyyeou-bank", r"(bag|glm_joint|rawview)_(oof|full)\.npy$"),
+    "nilanjansaha123/96-key-digit-trie-gpt-2-full-refit-hybrid": ("nilanjan-96key", r"_(oof|full)\.npy$"),
+}
 
 
 def run(cmd, timeout=1800):
@@ -67,6 +71,15 @@ def main():
         if d is not None and d > last_import:
             print(f"NEW VERSION: {ref} ({d})")
             run([KAGGLE, "datasets", "download", "-d", ref, "-p", str(B / folder), "--unzip", "-q", "--force"])
+            changed.append(ref)
+    # OOF banks published as notebook outputs: re-fetch the bag/GLM files every morning (cheap, and the
+    # dataset-version check above cannot see notebook re-runs); any new file triggers a re-stack
+    for ref, (folder, pattern) in KERNELS.items():
+        before = {p.name: p.stat().st_mtime for p in (B / folder).rglob("*.npy")}
+        run([KAGGLE, "kernels", "output", ref, "-p", str(B / folder), "--file-pattern", pattern, "-o", "-q"], timeout=1800)
+        after = {p.name: p.stat().st_mtime for p in (B / folder).rglob("*.npy")}
+        if after != before:
+            print(f"NEW OUTPUT: {ref} ({len(after)} npy)")
             changed.append(ref)
     print(f"sources changed: {len(changed)}")
     # datasets not yet in DATASETS: printed so a new OOF library can be added by hand
