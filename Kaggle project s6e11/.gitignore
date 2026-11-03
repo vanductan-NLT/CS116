@@ -1,0 +1,10 @@
+.venv/
+data/
+oof/
+test_preds/
+submissions/
+__pycache__/
+.ipynb_checkpoints/
+kaggle.json
+access_token
+.env
