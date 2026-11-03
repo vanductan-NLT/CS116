@@ -31,6 +31,9 @@ def parse_args():
     p.add_argument("--params", default="{}", help="JSON dict of model params")
     p.add_argument("--folds", type=int, default=5)
     p.add_argument("--fold-seed", type=int, default=42)
+    p.add_argument("--te-seed", type=int, default=0, help="offset of the inner target-encoding split seed (bagging)")
+    p.add_argument("--te-smooth", type=float, default=20.0, help="target-encoding smoothing weight toward the prior")
+    p.add_argument("--seed", type=int, default=None, help="model random_state (bagging)")
     p.add_argument("--only-folds", default="", help="debug: comma list of fold ids to run")
     p.add_argument("--pseudo", default="", help="name of a run whose <name>_by_fold.npy test preds become soft labels")
     p.add_argument("--pseudo-thr", type=float, default=0.0, help="keep test rows with |p-0.5| >= thr (0 = all)")
@@ -46,6 +49,8 @@ def main():
     groups = {g for g in a.groups.split(",") if g}
     te_cols = [c for c in a.te.split(",") if c]
     params = json.loads(a.params)
+    if a.seed is not None:
+        params["random_state"] = a.seed
 
     train, test = load_raw()
     y = train[TARGET].values
@@ -72,7 +77,8 @@ def main():
             y_tr = np.concatenate([y_tr, np.round(pl[sel]) if a.pseudo_hard else pl[sel]])
             w_tr = np.concatenate([w_tr, np.full(sel.sum(), a.pseudo_weight, dtype="float32")])
         if te_cols:
-            X_tr, X_va, X_te = add_target_encoding(X_tr, y_tr, X_va, X_te, te_cols, seed=k)
+            X_tr, X_va, X_te = add_target_encoding(X_tr, y_tr, X_va, X_te, te_cols, smoothing=a.te_smooth,
+                                                   seed=k + 100 * a.te_seed)
         if a.self_distill > 0:
             # label-noise smoothing: inner 4-fold teacher of the same model class, fit only on this fold's train rows
             inner = np.zeros(len(X_tr), dtype="float32")

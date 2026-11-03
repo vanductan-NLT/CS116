@@ -74,6 +74,24 @@ def build_static_features(train: pd.DataFrame, test: pd.DataFrame, groups: set[s
             for b in top[i + 1:]:
                 X[f"k_{a}__{b}"] = pd.factorize(X[a].astype(str) + "_" + X[b].astype(str))[0].astype("int32")
 
+    if "te_trie" in groups:
+        # "digit-trie" keys (lazyyeou / areebbb recipe): the LM writes each number as a string, so encode its
+        # integer part, its fractional part, floor(x/10), floor(10x) and length|leading digits - no pair keys
+        # (pair TE measured -0.0007 by two independent notebooks)
+        for c in FLOAT_COLS:
+            dec = 2 if (np.round(X[c] * 100) % 10 != 0).any() else 1
+            s = X[c].map(lambda v, d=dec: f"{v:.{d}f}").str.split(".")
+            ip, fp = s.str[0], s.str[1]
+            ln = ip.str.len().astype(str)
+            X[f"k_{c}_int"] = pd.factorize(ip)[0].astype("int32")
+            X[f"k_{c}_frac"] = pd.factorize(fp)[0].astype("int32")
+            X[f"k_{c}_ten"] = np.floor(X[c] / 10.0).astype("int64")
+            X[f"k_{c}_dec"] = np.floor(X[c] * 10.0 + 1e-6).astype("int64")
+            X[f"k_{c}_l1"] = pd.factorize(ln + "|" + ip.str[:1])[0].astype("int32")
+            X[f"k_{c}_l2"] = pd.factorize(ln + "|" + ip.str[:2])[0].astype("int32")
+            ref = pd.concat([X[c], pd.read_csv(next(DATA_DIR.glob("original/*.csv")))[c]])
+            X[f"cnt_{c}"] = X[c].map(ref.value_counts()).fillna(0).astype("float32")
+
     if "original" in groups:
         # teachers fit on the 20k source rows only (src/original_data_features.py); label-free w.r.t. competition
         orig = pd.read_parquet(TARGET_DIR_ORIGINAL).set_index(ID_COL)

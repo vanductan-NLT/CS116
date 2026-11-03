@@ -30,6 +30,7 @@ DATASETS = {  # kaggle dataset ref -> local folder name (must match SOURCES in i
     "goodpjw2008/s6e11-fraud-series-artifacts": "s6e11-fraud-series-artifacts",
     "wguesdon/s6e11-tree-ensemble-predictions": "wguesdon-tree-ensemble",
     "malyshevdanil/s6e11-cross-fitted-artifacts": "s6e11-cross-fitted-artifacts",
+    "masayakawamata/s6e11-saved-study-records": "s6e11-saved-study-records",
 }
 
 

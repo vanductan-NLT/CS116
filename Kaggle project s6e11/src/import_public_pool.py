@@ -25,8 +25,12 @@ SOURCES = [
     ("s6e11-fraud-series-artifacts", "gp"),     # goodpjw2008, X_oof.npy / X_test.npy pairs
     ("wguesdon-tree-ensemble", "wg"),           # wguesdon, npz archives
     ("s6e11-cross-fitted-artifacts", "md"),     # malyshevdanil, per-fold npz (merged by the npz scan if keyed oof/test)
+    ("s6e11-saved-study-records", "mk"),        # masayakawamata, <member>/oof.npy + <member>/test.npy
+    ("lazyyeou-bank", "lz"),                    # notebook output of lazyyeou: <m>_oof.npy + <m>_full.npy (refit)
+    ("nilanjan-96key", "ns"),                   # notebook output of Nilanjan_Saha123: <m>_oof.npy + <m>_full.npy
 ]
-EXCLUDE = ("stack", "blend", "knn_feats")  # level-2 outputs / feature matrices are not members
+# level-2 outputs / feature matrices are not members; "__s<k>" are single seeds whose bag is also published
+EXCLUDE = ("stack", "blend", "knn_feats", "__s")
 MIN_AUC = 0.93  # S6E11 single models sit around 0.945-0.950
 
 train, test = load_raw()
@@ -74,11 +78,18 @@ def scan(d, tag):
         tf = d / f"test_{x}.npy"
         if tf.exists():
             add(f"{tag}_{names.get(x, x)}", np.load(f), np.load(tf))
-    for f in sorted(glob.glob(str(d / "*_oof.npy"))):  # goodpjw2008 naming: <member>_oof.npy + <member>_test.npy (or _full.npy)
-        x = os.path.basename(f)[:-8]
-        tf = d / f"{x}_test.npy" if (d / f"{x}_test.npy").exists() else d / f"{x}_full.npy"
-        if tf.exists():
+    # <member>_oof.npy + <member>_test.npy (or _full.npy = full-data refit), possibly in a preds/ subfolder
+    for f in sorted(glob.glob(str(d / "**" / "*_oof.npy"), recursive=True)):
+        x, fd = os.path.basename(f)[:-8], os.path.dirname(f)
+        tf = os.path.join(fd, f"{x}_test.npy")
+        tf = tf if os.path.exists(tf) else os.path.join(fd, f"{x}_full.npy")
+        if os.path.exists(tf):
             add(f"{tag}_{x}", np.load(f), np.load(tf))
+    # masayakawamata: one directory per member holding oof.npy + test.npy (name = directory name)
+    for f in sorted(glob.glob(str(d / "**" / "oof.npy"), recursive=True)):
+        tf = os.path.join(os.path.dirname(f), "test.npy")
+        if os.path.exists(tf):
+            add(f"{tag}_{os.path.basename(os.path.dirname(f))}", np.load(f), np.load(tf))
     # malyshevdanil: one npz per fold with valid_index / valid / test -> assemble OOF, average the 5 test arrays
     fold_files = sorted(glob.glob(str(d / "**" / "*_fold0.npz"), recursive=True))
     for f0 in fold_files:
